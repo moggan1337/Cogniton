@@ -745,3 +745,314 @@ Cogniton builds upon decades of research in computational neuroscience and neuro
 <p align="center">
   <strong>Cogniton</strong> - Simulating Brain-Inspired Computation
 </p>
+
+---
+
+## Advanced Topics
+
+### Custom Neuron Models
+
+You can extend Cogniton with custom neuron models by implementing the NeuronBase interface:
+
+```python
+from cogniton.neurons.base import NeuronBase
+
+class CustomNeuron(NeuronBase):
+    def __init__(self, neuron_id, config):
+        super().__init__(neuron_id)
+        self.config = config
+        
+    def update(self, t, dt):
+        # Custom dynamics
+        pass
+        
+    def reset_state(self):
+        # Reset to initial conditions
+        pass
+```
+
+### Custom Plasticity Rules
+
+Implement your own plasticity rules:
+
+```python
+from cogniton.synapses.plasticity import SynapticPlasticity
+
+class CustomPlasticity(SynapticPlasticity):
+    def __init__(self, learning_rate=0.01):
+        super().__init__()
+        self.learning_rate = learning_rate
+        
+    def apply(self, synapse, pre_time, post_time):
+        # Custom weight update rule
+        delta_w = self.learning_rate * some_function(pre_time, post_time)
+        synapse.weight += delta_w
+        return synapse.weight
+```
+
+### Batch Processing
+
+For large-scale simulations, use batch processing:
+
+```python
+from cogniton.simulation.runner import SimulationRunner
+
+runner = SimulationRunner()
+
+# Create multiple networks
+for i in range(10):
+    runner.create_snn()
+    runner.run_snn(t_end=1.0, progress=False)
+    
+# Collect all results
+results = runner.get_results()
+```
+
+### Distributed Simulation
+
+For very large networks, distribute across multiple processes:
+
+```python
+from multiprocessing import Pool
+
+def simulate_network(args):
+    network_id, config = args
+    network = SpikingNeuralNetwork(network_id, config)
+    network.run(t_end=10.0, progress=False)
+    return network.get_statistics()
+
+with Pool(4) as p:
+    results = p.map(simulate_network, network_configs)
+```
+
+### Real-Time Visualization
+
+Monitor simulations in real-time:
+
+```python
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+fig, ax = plt.subplots()
+sc = ax.scatter([], [])
+
+def update(frame):
+    # Update spike raster
+    times, ids = network.get_raster_data()
+    sc.set_offsets(np.c_[times[-100:], ids[-100:]])
+    return sc,
+
+anim = FuncAnimation(fig, update, frames=100, interval=100)
+plt.show()
+```
+
+---
+
+## Mathematical Foundations
+
+### Membrane Potential Dynamics
+
+The membrane potential evolves according to:
+
+```
+dV/dt = -(V - V_rest) / τ_mem + I_ext / C_mem
+```
+
+For synaptic input:
+
+```
+I_syn(t) = Σ w_i * Σ exp(-(t - t_i^k) / τ_syn) for each synapse
+```
+
+### Spike Generation
+
+Spikes occur when:
+
+```
+V(t) >= V_thresh
+```
+
+After a spike:
+
+```
+V(t+) = V_reset
+```
+
+### Network Dynamics
+
+In a network of N neurons:
+
+```
+τ_i * dV_i/dt = -(V_i - V_rest) + Σ_j W_ij * S_j(t - d_ij)
+
+where S_j(t) = Σ δ(t - t_j^k) is the spike train
+```
+
+### Resonance and Oscillations
+
+Networks can exhibit oscillatory behavior:
+
+```
+ω = sqrt(1/(τ_e * τ_i) - (1/(2*τ) + g_i/(2*τ_e))^2)
+```
+
+---
+
+## Research Applications
+
+### Computational Neuroscience
+
+- **Neural Coding**: Study how information is encoded in spike trains
+- **Oscillations**: Analyze gamma, theta, and other brain rhythms
+- **Connectomics**: Model specific neural circuits
+
+### Machine Learning
+
+- **Pattern Recognition**: SNNs for temporal pattern classification
+- **Time Series**: Reservoir computing for forecasting
+- **Reinforcement Learning**: Reward-modulated plasticity
+
+### Robotics
+
+- **Event-Based Vision**: Process dynamic vision sensors
+- **Motor Control**: Spiking networks for motor primitives
+- **Adaptive Control**: Online learning in robotic systems
+
+### Brain-Computer Interfaces
+
+- **Neural Decoding**: Convert spiking activity to control signals
+- **Stimulation**: Closed-loop stimulation protocols
+- **Prosthetics**: Brain-machine interface applications
+
+---
+
+## Algorithm Descriptions
+
+### Exponential Euler Integration
+
+For stable numerical integration of differential equations:
+
+```
+V(t+dt) = V_inf + (V(t) - V_inf) * exp(-dt/τ)
+
+where V_inf = V_rest + R * I
+```
+
+### Event-Driven Updates
+
+Events are processed in priority queue order:
+
+```
+while event_queue not empty:
+    event = pop_next_event()
+    process_event(event)
+    schedule_dependent_events(event)
+```
+
+### STDP Implementation
+
+The STDP rule is implemented as:
+
+```
+if Δt > 0:  # Pre before post
+    dw = A_plus * exp(-Δt / tau_plus)
+    w = min(w + dw, w_max)
+else:  # Post before pre
+    dw = -A_minus * exp(Δt / tau_minus)
+    w = max(w + dw, w_min)
+```
+
+### Weight Normalization
+
+Weights can be normalized to maintain network stability:
+
+```
+w_ij = w_ij / (Σ_k w_ik + ε)
+```
+
+---
+
+## Glossary
+
+| Term | Definition |
+|------|------------|
+| **Action Potential** | Brief electrical pulse in neurons |
+| **Axonal Delay** | Time for spike to travel to synapses |
+| **Excitatory** | Synapse that increases firing probability |
+| **Inhibitory** | Synapse that decreases firing probability |
+| **Membrane Time Constant** | Rate of voltage decay (τ = RC) |
+| **Plasticity** | Activity-dependent synaptic modification |
+| **Refractory Period** | Time after spike when neuron cannot fire |
+| **Synaptic Weight** | Strength of synaptic connection |
+| **Spike Train** | Sequence of spike times |
+| **Synaptic Current** | Current injected by synaptic activation |
+
+---
+
+## Frequently Asked Questions
+
+**Q: How does Cogniton compare to NEST/Brian2?**
+
+A: Cogniton is designed for rapid prototyping and flexibility, with a focus on neuromorphic hardware integration. NEST and Brian2 are more mature simulators with greater biological detail. Cogniton emphasizes computational efficiency and hardware co-design.
+
+**Q: Can I use Cogniton on actual neuromorphic hardware?**
+
+A: Yes! Cogniton includes interfaces for Intel Loihi and IBM TrueNorth. For software-only simulation, the CPU backend is used by default.
+
+**Q: How do I choose between LIF and HH neurons?**
+
+A: Use LIF for large-scale simulations where computational efficiency is important. Use HH when you need detailed ion channel dynamics, such as studying action potential initiation or drug effects.
+
+**Q: What is the maximum network size?**
+
+A: Cogniton has been tested with networks up to 100,000 neurons. The actual limit depends on available memory. For larger networks, consider using sparse connectivity or neuromorphic hardware.
+
+**Q: How do I cite Cogniton in my paper?**
+
+A: See the Citations section above for the recommended BibTeX entry.
+
+---
+
+## Changelog
+
+### v1.0.0 (2024)
+
+- Initial release
+- LIF and Hodgkin-Huxley neuron models
+- STDP and short-term plasticity
+- Event-driven simulation engine
+- Reservoir computing (ESN, LSM)
+- Intel Loihi and IBM TrueNorth interfaces
+- Analysis and visualization tools
+- Comprehensive test suite
+
+---
+
+## References and Further Reading
+
+### Books
+
+1. Dayan, P. & Abbott, L.F. (2001). Theoretical Neuroscience. MIT Press.
+2. Gerstner, W. & Kistler, W.M. (2002). Spiking Neuron Models. Cambridge University Press.
+3. Izhikevich, E.M. (2007). Dynamical Systems in Neuroscience. MIT Press.
+
+### Review Articles
+
+1. Izhikevich, E.M. (2004). Which model to use for cortical spiking neurons? IEEE Transactions on Neural Networks.
+2. Pfeiffer, M. & Pfeil, T. (2018). Deep Learning With Spiking Neurons. Frontiers in Neuroscience.
+
+### Research Papers
+
+1. Hodgkin, A.L. & Huxley, A.F. (1952). A quantitative description of membrane current. Journal of Physiology.
+2. Maass, W., Natschläger, T., & Markram, H. (2002). Real-time computing without stable states. Neural Computation.
+3. Jaeger, H. (2001). The echo state approach to analysing and training RNNs. GMD Report.
+4. Bi, G. & Poo, M. (1998). Synaptic modifications in cultured hippocampal neurons. Journal of Neuroscience.
+
+---
+
+<p align="center">
+  Made with ❤️ by the Cogniton Team<br>
+  <a href="https://github.com/moggan1337/Cogniton">GitHub</a> •
+  <a href="https://github.com/moggan1337/Cogniton/issues">Issues</a> •
+  <a href="https://github.com/moggan1337/Cogniton/discussions">Discussions</a>
+</p>
