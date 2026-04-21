@@ -25,6 +25,24 @@
 
 ---
 
+## 🎬 Demo
+![Cogniton Demo](demo.gif)
+
+*Spiking neural network simulation with STDP learning*
+
+## Screenshots
+| Component | Preview |
+|-----------|---------|
+| Spike Trains | ![spikes](screenshots/spike-trains.png) |
+| Network Viewer | ![network](screenshots/network-view.png) |
+| Plasticity Weights | ![weights](screenshots/plasticity.png) |
+
+## Visual Description
+Spike train visualizations show neuron firing patterns as raster plots with color-coded layers. Network viewer displays spiking neurons with synaptic connections weighted by conductance. Plasticity shows STDP learning curves.
+
+---
+
+
 ## Table of Contents
 
 1. [Installation](#installation)
